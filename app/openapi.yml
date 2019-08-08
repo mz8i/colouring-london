@@ -1,0 +1,256 @@
+openapi: 3.0.0
+info:
+  title: "API"
+  version: "1.0.0"
+paths:
+  /buildings/locate:
+    get:
+      operationId: buildingsLocate
+      summary: Locate buildings at the given coordinates
+      parameters:
+        - name: lat
+          required: true
+          in: query
+          description: Latitude
+          schema:
+            type: number
+        - name: lng
+          required: true
+          in: query
+          description: Longitude
+          schema: 
+            type: number
+      responses:
+        200:
+          description: A list of buildings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Building'
+
+  /buildings/reference:
+    get:
+      operationId: buildingsReference
+      summary: Get buildings by reference (UPRN/TOID or other)
+      parameters:
+        - name: key
+          required: true
+          in: query
+          description: Type of reference ID
+          schema:
+            type: string
+            enum: [uprn, toid]
+        - name: id
+          required: true
+          in: query
+          description: Reference ID
+          schema:
+            type: string
+      responses:
+        200:
+          description: A list of buildings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Building'
+
+  /building/{building_id}.json:
+    get:
+      operationId: getBuildingById
+      summary: Get a single building by building ID
+      parameters:
+        - name: building_id
+          required: true
+          in: path
+          description: Building ID
+          schema:
+            type: string
+      responses:
+        200:
+          description: A building
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Building'
+                  - type: object
+                    properties:
+                      edit_history:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BuildingEditHistoryEntry'
+
+    post:
+      operationId: updateBuildingById
+      summary: Update data about a single building by ID
+      parameters:
+        - name: building_id
+          required: true
+          in: path
+          description: Building ID
+          schema:
+            type: string
+        # TODO: authentication params
+      requestBody:
+        description: Updated building data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Building'
+      responses:
+        200:
+          description: The updated building
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Building'
+
+  # TODO: /building/{building_id}/uprns.json
+  # TODO: /building/{building_id}/like.json
+
+components:
+  schemas:
+    ListedBuildingCategory:
+      type: string
+      enum:
+        - Listed Building
+        - Scheduled Monument
+        - Wreck
+        - Park and Garden
+        - Battlefield
+        - World Heritage Site
+        - Certificate of Immunity
+        - Building Preservation Notice
+        - None
+
+    ListedBuildingGrade:
+      type: string
+      enum:
+        - I
+        - II*
+        - II
+
+    Building:
+      properties:
+        building_id:
+            type: integer
+        ref_toid:
+            type: string
+        ref_osm_id:
+            type: integer
+        geometry_id:
+            type: integer
+        revision_id:
+            type: integer
+        location_name:
+            type: string
+        location_number:
+            type: string
+        location_street:
+            type: string
+        location_line_two:
+            type: string
+        location_town:
+            type: string
+        location_postcode:
+            type: string
+        location_latitude:
+            type: number
+        location_longitude:
+            type: number
+        date_year:
+            type: integer
+        date_lower:
+            type: integer
+        date_upper:
+            type: integer
+        date_source:
+            type: string
+        date_source_detail:
+            type: string
+        facade_year:
+            type: integer
+        facade_upper:
+            type: integer
+        facade_lower:
+            type: integer
+        facade_source:
+            type: string
+        facade_source_detail:
+            type: string
+        size_storeys_attic:
+            type: integer
+        size_storeys_core:
+            type: integer
+        size_storeys_basement:
+            type: integer
+        size_height_apex:
+            type: number
+        size_floor_area_ground:
+            type: number
+        size_floor_area_total:
+            type: number
+        size_width_frontage:
+            type: number
+        likes_total:
+            type: integer
+        planning_portal_link:
+            type: string
+        planning_in_conservation_area:
+            type: boolean
+        planning_conservation_area_name:
+            type: string
+        planning_in_list:
+            type: boolean
+        planning_list_id:
+            type: integer
+        planning_heritage_at_risk_id:
+            type: integer
+        planning_world_list_id:
+            type: integer
+        planning_in_glher:
+            type: boolean
+        planning_glher_url:
+            type: string
+        planning_in_apa:
+            type: boolean
+        planning_apa_name:
+            type: string
+        planning_apa_tier:
+            type: integer
+        planning_in_local_list:
+            type: boolean
+        planning_local_list_url:
+            type: string
+        planning_in_historic_area_assessment:
+            type: boolean
+        planning_historic_area_assessment_url:
+            type: string
+        planning_list_cat:
+            $ref: '#/components/schemas/ListedBuildingCategory'
+        planning_list_grade:
+            $ref: '#/components/schemas/ListedBuildingGrade'
+        date_link:
+            type: array
+            items:
+              type: string
+
+    BuildingEditHistoryEntry:
+      type: object
+      properties:
+        revision_id:
+          type: string
+        forward_patch:
+          $ref: '#/components/schemas/Building'
+        reverse_patch:
+          $ref: '#/components/schemas/Building'
+        date_trunc:
+          type: string
+          format: date-time
+        username:
+          type: string
