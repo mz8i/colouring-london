@@ -123,6 +123,44 @@ async function getBuildingEditHistory(id: number) {
     }
 }
 
+async function getBuildingLastEdited(id: number) {
+    try {
+        const history: {
+            revision_id: number;
+            forward_patch: object;
+            log_timestamp: Date;
+            username: string;
+        }[] = await db.manyOrNone(
+            `SELECT log_id as revision_id, forward_patch, log_timestamp, username
+            FROM logs
+            JOIN users
+            ON logs.user_id = users.user_id
+            WHERE building_id = $1
+            ORDER BY log_timestamp DESC
+            `, [id]
+        );
+        
+        console.log(history);
+        const lastEditedInfo = {};
+
+        for(const {forward_patch, log_timestamp, username} of history) {
+            for(const key of Object.keys(forward_patch)) {
+                if (!lastEditedInfo[key]) {
+                    lastEditedInfo[key] = {
+                        lastEdited: log_timestamp,
+                        username: username
+                    };
+                }
+            }
+        }
+
+        return lastEditedInfo;
+    } catch(error) {
+        console.error(error);
+        return [];
+    }
+}
+
 async function getBuildingLikeById(buildingId: number, userId: string) {
     try {
         const res = await db.oneOrNone(
@@ -425,6 +463,7 @@ export {
     getBuildingById,
     getBuildingLikeById,
     getBuildingEditHistory,
+    getBuildingLastEdited,
     getBuildingUPRNsById,
     saveBuilding,
     likeBuilding,

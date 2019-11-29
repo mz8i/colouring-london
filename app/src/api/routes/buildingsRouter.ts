@@ -34,4 +34,7 @@ router.route('/:building_id/like.json')
 router.route('/:building_id/history.json')
     .get(buildingController.getBuildingEditHistoryById);
 
+router.route('/:building_id/last_edited.json')
+    .get(buildingController.getBuildingLastEditedById);
+
 export default router;

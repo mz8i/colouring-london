@@ -122,6 +122,17 @@ const getBuildingEditHistoryById = asyncController(async (req: express.Request, 
     }
 });
 
+const getBuildingLastEditedById = asyncController(async (req: express.Request, res: express.Response) => {
+    const { building_id } = req.params;
+    try {
+        const lastEditedInfo = await buildingService.getBuildingLastEdited(building_id);
+
+        res.send({ lastEdited: lastEditedInfo });
+    } catch(error) {
+        res.send({ error: 'Database error' });
+    }
+});
+
 const updateBuildingLikeById = asyncController(async (req: express.Request, res: express.Response) => {
     if (!req.session.user_id) {
         return res.send({ error: 'Must be logged in' });
@@ -165,5 +176,6 @@ export default {
     getBuildingLikeById,
     updateBuildingLikeById,
     getBuildingEditHistoryById,
+    getBuildingLastEditedById,
     getLatestRevisionId
 };
